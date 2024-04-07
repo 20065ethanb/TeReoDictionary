@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block pageheading %}Welcome{% if logged_in %} {{ user_info.get('firstname') }} {{ user_info.get('lastname') }}!{% endif %}{% endblock %}
+
+
+{% block main %}
+<form class="myform" method="post">
+    <div>Search:</div>
+    <div><input type="text" name="search" id="search" required></div>
+</form>
+{% endblock %}
