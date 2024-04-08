@@ -3,14 +3,21 @@
 {% block pageheading %}Login{% endblock %}
 
 {% block main %}
-<form class="myform" method="POST">
-    <div>Email:</div>
-    <div><input type="email" name="email" id="email" required></div>
+    <form class="form" method="POST">
+        <div class="form-group">
+            <div class="form-text-label">Email:</div>
+            <div class="form-element"><input type="email" name="email" id="email" required></div>
+        </div>
 
-    <div>Password:</div>
-    <div><input type="password" name="password" id="password" required></div>
+        <div class="form-group">
+            <div class="form-text-label">Password:</div>
+            <div class="form-element"><input type="password" name="password" id="password" required></div>
+        </div>
 
-    <div><input type="submit" value="Login"></div>
-</form>
-<p>If you don't yet have an account, please <a href="/signup">sign up</a>.</p>
+        <div class="form-group">
+            <div class="form-button"><input type="submit" value="Login"></div>
+        </div>
+    </form>
+    <br>
+    <p>If you don't yet have an account, please <a href="/signup">sign up</a>.</p>
 {% endblock %}

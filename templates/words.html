@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block pageheading %}Words{% endblock %}
+
+{% block main %}
+    <table><tr><td>
+        <form class="form" method="POST">
+            <div class="form-group">
+                <div class="form-button">Search Words:</div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-element"><input type="text" name="search" id="search" required></div>
+                <div class="form-button-label"><input type="submit" value="Search"></div>
+            </div>
+       </form>
+    </td></tr></table>
+    <br>
+    {% if word_info != None %}
+        {% for word in word_info %}
+            <table>
+                <tr>
+                    <td colspan="2"><h3>{{ word[2] }}</h3><p>{{ word[1] }}</p></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><p class="definition">{{ word[3] }}</p></td>
+                </tr>
+                <tr>
+                    <td style="width: 50%">({{ word[4] }})</td>
+                    <td style="width: 50%">Level {{ word[5] }}</td>
+                </tr>
+            </table>
+            <br>
+        {% endfor %}
+    {% else %}
+        <h2>No results found</h2>
+    {% endif %}
+{% endblock %}

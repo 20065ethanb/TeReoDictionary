@@ -39,6 +39,15 @@ h2 {
     margin: 0 0 0.5rem 0;
 }
 
+h3 {
+    font-size: 2rem;
+    color: rgb(76, 197, 47);
+}
+
+.definition {
+    font-weight: bold;
+}
+
 nav {
     background-color: rgb(24, 44, 19); /* darkest blue */
     text-align: center;
@@ -80,75 +89,7 @@ a, a:visited {
     text-decoration: none;
 }
 
-.category-menu {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-}
-
-.category-item {
-    width: 32%;
-}
-
-.category-item h2 {
-    text-align: center;
-    font-size: 1.2rem;
-    padding: 0.5rem;
-}
-
-.product-box img {
-    /*max-width:200px;*/
-}
-
-.products {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-}
-
-.product-box {
-    /*width: 13vw;*/
-    width: 32%;
-    /*float: left;*/
-    /*display: table-cell;*/
-    /*padding: 0.5rem;*/
-    /*margin: 1vw;*/
-    border: 1px solid rgb(237, 255, 232);
-    color: rgb(76, 197, 47);
-    margin-bottom: 0.5rem;
-}
-
-.product-box-heading {
-    padding: 0.5rem;
-}
-
-.product-box-image {
-    height: 150px;
-    overflow: hidden;
-}
-
-.product-box-info {
-    padding: 0.5rem;
-
-}
-
-.product-box h3 {
-    font-size: 1.2rem;
-    text-align: center;
-}
-
-.product-box p {
-    font-size: 0.8rem;
-    margin-bottom: 0.3rem;
-}
-
-.product-box a {
-    border: 1px solid tomato;
-    padding: 0.3rem;
-    text-align: right;
-}
-
-.myform {
+.form {
     width: 80%;
     margin: auto;
     padding-bottom: 1rem;
@@ -160,10 +101,20 @@ a, a:visited {
     padding-top: 3rem;
 }
 
-.form-label {
+.form-group input {
+    padding: 0.3rem;
+    width: 100%;
+}
+
+.form-text-label {
     width: 30%;
     float: left;
     padding: 0.3rem;
+}
+
+.form-button-label {
+    width: 30%;
+    float: left;
 }
 
 .form-element {
@@ -171,52 +122,18 @@ a, a:visited {
     float: left;
 }
 
-.button-group {
-    margin-top: 3rem;
-    text-align: center;
-}
-
-.button-group input {
-    padding: 0.3rem;
-}
-
-.form-group input {
-    padding: 0.3rem;
+.form-button {
     width: 100%;
+    float: left;
 }
 
 table {
     border-collapse: collapse;
+    width: 75%;
+    margin: auto;
 }
 
-.cart-table > thead {
-    font-weight: bold;
-}
-
-.cart-table td {
-    padding: 0.2rem 1rem;
-    text-align: center;
-    border: 1px solid #edffe8;
-}
-
-.cart-total {
-    font-weight: bold;
-}
-
-
-@media only screen and (max-width: 600px) {
-    .container {
-        width: 100%;
-    }
-
-    .product-box {
-        width: 49%;
-    }
-}
-
-
-@media only screen and (max-width: 400px) {
-    .product-box {
-        width: 100%;
-    }
+td, tr {
+    /*border: 1px solid black;*/
+    padding: 8px;
 }

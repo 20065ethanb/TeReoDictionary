@@ -15,8 +15,7 @@
     <div class="container">
         <div class="navbar-brand"><a href="/">Te Reo Dictionary</a></div>
         <div class="navbar-links">
-            <a href="/">Home</a>
-            <a href="/categories">Categories</a>
+            <a href="/words">Words</a>
             {% if logged_in %}
                 {% if user_info.get('role') == 'Teacher' %}
                     <a href="/edit">Edit Words</a>

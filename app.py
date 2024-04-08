@@ -4,8 +4,8 @@ from sqlite3 import Error
 from flask_bcrypt import Bcrypt
 from datetime import date
 
-# DATABASE = "C:/Users/GGPC/PycharmProjects/Te Reo Dictionary/TeReoDictionary.db" # Desktop
-DATABASE = "C:/Users/ethan/PycharmProjects/Te Reo Dictionary/TeReoDictionary.db"  # Laptop
+DATABASE = "C:/Users/GGPC/PycharmProjects/TeReoDictionary/TeReoDictionary.db" # Desktop
+# DATABASE = "C:/Users/ethan/PycharmProjects/Te Reo Dictionary/TeReoDictionary.db"  # Laptop
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -55,9 +55,42 @@ def user_info():
     return session
 
 
-@app.route('/')
+@app.route('/', methods=['POST', 'GET'])
 def render_home():
+    # gets search
+    if request.method == 'POST':
+        search = request.form.get('search').title().strip()
+        return redirect('/words/' + search)
+
     return render_template('home.html', logged_in=is_logged_in(), user_info=user_info())
+
+
+@app.route('/words', methods=['POST', 'GET'])
+def render_words():
+    # gets search
+    if request.method == 'POST':
+        search = request.form.get('search').title().strip()
+        return redirect('/words/' + search)
+
+    words = database_select('SELECT * FROM words', ())
+    return render_template('words.html', logged_in=is_logged_in(), user_info=user_info(), word_info=words)
+
+
+@app.route('/words/<search>', methods=['POST', 'GET'])
+def render_wordsearch(search):
+    # gets search
+    if request.method == 'POST':
+        search = request.form.get('search').title().strip()
+        return redirect('/words/' + search)
+
+    maori_words = database_select('SELECT * FROM words WHERE maori_word = ?', (search, ))
+    english_words = database_select('SELECT * FROM words WHERE english_word = ?', (search, ))
+    category_words = database_select('SELECT * FROM words WHERE category = ?', (search, ))
+    level_words = database_select('SELECT * FROM words WHERE level = ?', (search, ))
+    words = maori_words + english_words + category_words + level_words
+    if len(words) == 0:
+        words = None
+    return render_template('words.html', logged_in=is_logged_in(), user_info=user_info(), word_info=words)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -149,11 +182,6 @@ def about():
 @app.route('/edit')
 def edit():  # put application's code here
     return render_template('edit.html', logged_in=is_logged_in(), user_info=user_info())
-
-
-@app.route('/categories')
-def categories():
-    return render_template('categories.html', logged_in=is_logged_in(), user_info=user_info())
 
 
 if __name__ == '__main__':
