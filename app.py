@@ -1,11 +1,11 @@
-from flask import Flask, render_template, redirect, request, session
+from flask import Flask, render_template, redirect, request, session, flash
 import sqlite3
 from sqlite3 import Error
 from flask_bcrypt import Bcrypt
 from datetime import date
 
-DATABASE = "C:/Users/GGPC/PycharmProjects/TeReoDictionary/TeReoDictionary.db" # Desktop
-# DATABASE = "C:/Users/ethan/PycharmProjects/Te Reo Dictionary/TeReoDictionary.db"  # Laptop
+# DATABASE = "C:/Users/GGPC/PycharmProjects/TeReoDictionary/TeReoDictionary.db" # Desktop
+DATABASE = "C:/Users/ethan/PycharmProjects/Te Reo Dictionary/TeReoDictionary.db"  # Laptop
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -97,12 +97,14 @@ def render_wordsearch(search):
 def render_login():
     # checks if they're logged in, if so they're sent to homepage
     if is_logged_in():
+        flash("Already logged in!")
         return redirect('/')
 
     # get your email and password
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password'].strip()
+
         # checks account info to see if it is valid, error will occur if the email does not exist
         try:
             # selects your account info
@@ -114,11 +116,13 @@ def render_login():
             db_password = user_data[3]
             role = user_data[4]
         except IndexError:
-            return redirect('/login?error=Invalid+username+or+password')
+            flash("Invalid username or password")
+            return redirect('/login')
 
         # checks the password
         if not bcrypt.check_password_hash(db_password, password):
-            return redirect(request.referrer + "?error=Email+invalid+or+password+incorrect")
+            flash("Invalid username or password")
+            return redirect(request.referrer)
 
         # creates the user's session
         session['email'] = email
@@ -126,6 +130,7 @@ def render_login():
         session['firstname'] = first_name
         session['lastname'] = last_name
         session['role'] = role
+        flash("Login successful")
         return redirect('/')
 
     return render_template('login.html', logged_in=is_logged_in(), user_info=user_info())
@@ -148,11 +153,13 @@ def render_signup():
 
         # checks if your passwords are the same
         if password != password2:
-            return redirect('/signup?error=Passwords+do+not+match')
+            flash("Passwords do not match!")
+            return redirect('/signup')
 
         # make the minimum length 8 charters
         if len(password) < 8:
-            return redirect('/signup?error=Passwords+must+be+at+least+8+characters')
+            flash("Passwords must be at least 8 characters!")
+            return redirect('/signup')
 
         # changes the password for the database so the site's owner can't see it
         hashed_password = bcrypt.generate_password_hash(password)
@@ -160,7 +167,8 @@ def render_signup():
         try:
             database_action('INSERT INTO users (fname, lname, email, password, role) VALUES (?, ?, ?, ?, ?)',(fname, lname, email, hashed_password, role))
         except sqlite3.IntegrityError:
-            return redirect('/signup?error=Email+is+already+used')
+            flash("Email is already used!")
+            return redirect('/signup')
 
         return redirect('/login')
 
@@ -170,8 +178,11 @@ def render_signup():
 @app.route('/logout')
 def logout():
     # removes all info from the user's session
+    if "user" in session:
+        user = session["firstname"]
+        flash("You have been logged out, " + user + "!", "info")
     [session.pop(key) for key in list(session.keys())]
-    return redirect('/?message=See+you+next+time!')
+    return redirect('/')
 
 
 @app.route('/about')
