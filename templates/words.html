@@ -17,16 +17,51 @@
     <br>
     {% if word_info != None %}
         {% for word in word_info %}
-            <table>
+            <script>
+                function togglePopup{{ word[0] }}() {
+                    document.getElementById("word_popup_{{ word[0] }}").classList.toggle("active");
+                }
+            </script>
+            <div class="word_info_popup" id="word_popup_{{ word[0] }}">
+                <div class="overlay"></div>
+                <div class="content">
+                    <div class="close_button" onclick="togglePopup{{ word[0] }}()">&times;</div>
+                    <table class="word_display">
+                        <tr>
+                            <td colspan="2"><h3>{{ word[2] }}</h3><p>{{ word[1] }}</p></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="definition">{{ word[3] }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="word-image">
+                                <img src ="/static/images/{{ word[8] }}.jpg">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%">({{ word[4] }})</td>
+                            <td style="width: 50%">Level {{ word[5] }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Last edited by {{ word[7] }} on {{ word[6] }}</td>
+                        </tr>
+                        {% if logged_in %}
+                            {% if user_info['role'] == 'Teacher' %}
+                                <tr>
+                                    <td style="width: 50%"><a href="/edit/{{ word[0] }}">Edit</a></td>
+                                    <td style="width: 50%"><a href="/delete/{{ word[0] }}">Delete</a></td>
+                                </tr>
+                            {% endif %}
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+            <table class="word_display">
                 <tr>
-                    <td colspan="2"><h3>{{ word[2] }}</h3><p>{{ word[1] }}</p></td>
+                    <td colspan="2"><h3 onclick="togglePopup{{ word[0] }}()">{{ word[2] }}</h3><p>{{ word[1] }}</p></td>
                 </tr>
                 <tr>
-                    <td colspan="2"><p class="definition">{{ word[3] }}</p></td>
-                </tr>
-                <tr>
-                    <td style="width: 50%">({{ word[4] }})</td>
-                    <td style="width: 50%">Level {{ word[5] }}</td>
+                    <td colspan="2" class="definition">{{ word[3] }}</td>
                 </tr>
             </table>
             <br>

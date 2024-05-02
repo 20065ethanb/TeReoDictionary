@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block pageheading %}Categories{% endblock %}
+
+{% block main %}
+    <div class="categories">
+        {% for category in categories %}
+            <div class="category-box">
+                <div class="category-box-label">
+                    <h2><a href="/words/category/{{ category[0] }}">{{ category[1] }}</a></h2>
+                </div>
+                <div class = "category-box-image">
+                    <img src ="/static/images/{{ category[2] }}.jpg">
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
