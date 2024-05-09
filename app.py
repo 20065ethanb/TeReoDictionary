@@ -278,12 +278,51 @@ def edit(word_id):
         flash("The word has been updated!", "info")
 
     categories = database_select('SELECT * FROM categories', ())
-    word_info = database_select('SELECT * FROM words WHERE id=?',(word_id,))[0]
+    word_info = database_select('SELECT * FROM `words` WHERE id=?',(word_id,))[0]
 
     return render_template('edit.html', logged_in=is_logged_in(), user_info=user_info(), categories=categories, word_info=word_info)
 
 
-@app.route('/delete/<word_id>')
+@app.route('/delete', methods=['POST', 'GET'])
+def render_delete_words():
+    # gets search
+    if request.method == 'POST':
+        search = request.form.get('search').lower().strip()
+        return redirect('/delete/' + search)
+
+    words = database_select('SELECT * FROM words', ())
+    return render_template('delete.html', logged_in=is_logged_in(), user_info=user_info(), word_info=words)
+
+
+@app.route('/delete/')
+def delete_words_redirect():
+    return redirect('/delete')
+
+
+@app.route('/delete/<search>', methods=['POST', 'GET'])
+def render_delete_wordsearch(search):
+    # gets search
+    if request.method == 'POST':
+        search = request.form.get('search').lower().strip()
+        return redirect('/delete/' + search)
+
+    words = []
+    all_words = database_select('SELECT * FROM words', ())
+    # Checks all the parts for all the words
+    for word in all_words:
+        for part in word:
+            # Checks to see if the search is in the part, also allows the id to match the search
+            if search == word[0] or(search in str(part).lower() and (part != word[6] and part != word[7] and part != word[8])):
+                # If there is a match, if the word is not already in the list it is added
+                if word not in words:
+                    words.append(word)
+
+    if len(words) == 0:
+        words = None
+    return render_template('delete.html', logged_in=is_logged_in(), user_info=user_info(), word_info=words)
+
+
+@app.route('/delete_word/<word_id>')
 def delete(word_id):
     if is_logged_in():
         if session['role'] != 'Teacher':
@@ -293,7 +332,7 @@ def delete(word_id):
 
     database_action('DELETE FROM words WHERE id = ?', (word_id,))
     flash("The word has been deleted!", "info")
-    return redirect('/words')
+    return redirect('/delete')
 
 
 if __name__ == '__main__':
