@@ -3,13 +3,17 @@ import sqlite3, datetime
 from sqlite3 import Error
 from flask_bcrypt import Bcrypt
 from datetime import datetime
+import os
 
-# DATABASE = "C:/Users/GGPC/PycharmProjects/TeReoDictionary/TeReoDictionary.db" # Desktop
-DATABASE = "C:/Users/ethan/PycharmProjects/Te Reo Dictionary/TeReoDictionary.db"  # Laptop
+# PROJECT = "C:/Users/GGPC/PycharmProjects/TeReoDictionary" # Desktop
+PROJECT = "C:/Users/ethan/PycharmProjects/Te Reo Dictionary"  # Laptop
+DATABASE = PROJECT + "/TeReoDictionary.db"
 
+# variables
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 app.secret_key = "7175"
+ignoredParts = [0, 4, 6, 7, 8]
 
 
 def create_connection(db_file):
@@ -50,79 +54,105 @@ def is_logged_in():
         return True
 
 
-def user_info():
-    # gets user info
+def session_info():
+    # gets session info
     return session
+
+
+def category_info():
+    return database_select('SELECT * FROM categories', ())
+
+
+def user_info():
+    return database_select('SELECT * FROM users', ())
+
+
+def search_redirect(search, category_filter):
+    # Redirects user based on search and filter
+    categories = category_info()
+    category_id = '0'
+    for category in categories:
+        if category[1] == category_filter:
+            category_id = str(category[0])
+    if search == '' and category_id == '0':
+        return redirect('/words')
+    elif search == '':
+        return redirect('/words/category/' + category_id)
+    else:
+        return redirect('/words/' + category_id + '&' + search)
 
 
 @app.route('/', methods=['POST', 'GET'])
 def render_home():
-    # gets search
+    # home page
     if request.method == 'POST':
         search = request.form.get('search').lower().strip()
-        return redirect('/words/' + search)
+        return redirect('/words/0&' + search)
 
-    return render_template('home.html', logged_in=is_logged_in(), user_info=user_info())
+    return render_template('home.html', logged_in=is_logged_in(), session_info=session_info())
 
 
 @app.route('/words', methods=['POST', 'GET'])
 def render_words():
-    # gets search
+    # gets search and redirects based on search and filter
     if request.method == 'POST':
         search = request.form.get('search').lower().strip()
-        return redirect('/words/' + search)
+        category_filter = request.form.get('category')
+        return search_redirect(search, category_filter)
 
     words = database_select('SELECT * FROM words', ())
-    return render_template('words.html', logged_in=is_logged_in(), user_info=user_info(), word_info=words)
-
-
-@app.route('/words/')
-def words_redirect():
-    return redirect('/words')
+    return render_template('words.html', logged_in=is_logged_in(), session_info=session_info(), word_info=words, categories=category_info(), users=user_info(), search=None)
 
 
 @app.route('/words/category/<category_id>', methods=['POST', 'GET'])
 def render_wordcategory(category_id):
-    # gets search
+    # gets search and redirects based on search and filter
     if request.method == 'POST':
         search = request.form.get('search').lower().strip()
-        return redirect('/words/' + search)
+        category_filter = request.form.get('category')
+        return search_redirect(search, category_filter)
 
-    category = database_select('SELECT category FROM categories WHERE category_id = ?', (category_id,))[0][0]
-    words = database_select('SELECT * FROM words WHERE category = ?', (category,))
-
+    words = database_select('SELECT * FROM words WHERE category_id = ?', (category_id,))
     if len(words) == 0:
         words = None
-    return render_template('words.html', logged_in=is_logged_in(), user_info=user_info(), word_info=words)
+
+    search = [int(category_id), None]
+    return render_template('words.html', logged_in=is_logged_in(), session_info=session_info(), word_info=words, categories=category_info(), users=user_info(), words=words, search=search)
 
 
 @app.route('/words/<search>', methods=['POST', 'GET'])
 def render_wordsearch(search):
-    # gets search
+    # gets search and redirects based on search and filter
     if request.method == 'POST':
         search = request.form.get('search').lower().strip()
-        return redirect('/words/' + search)
+        category_filter = request.form.get('category')
+        return search_redirect(search, category_filter)
 
     words = []
-    all_words = database_select('SELECT * FROM words', ())
-    # Checks all the parts for all the words
-    for word in all_words:
-        for part in word:
-            # Checks to see if the search is in the part, also prevents the id from matching with the search
-            if search in str(part).lower() and (part != word[0] and part != word[6] and part != word[7] and part != word[8]):
-                # If there is a match, if the word is not already in the list it is added
-                if word not in words:
-                    words.append(word)
+    # Splits the search into searched word and category
+    search = str(search).split('&')
+    if len(search) == 2:
+        all_words = database_select('SELECT * FROM words', ())
+        # Checks all the parts for all the words
+        for word in all_words:
+            for part in word:
+                # Checks to see if the search is in the part, also prevents the id from matching with the search
+                if search[1] in str(part).lower() and (word[4] == int(search[0]) or search[0] == '0') and (word.index(part) not in ignoredParts):
+                    # If there is a match, if the word is not already in the list it is added
+                    if word not in words:
+                        words.append(word)
 
     if len(words) == 0:
         words = None
-    return render_template('words.html', logged_in=is_logged_in(), user_info=user_info(), word_info=words)
+
+    search[0] = int(search[0])
+    return render_template('words.html', logged_in=is_logged_in(), session_info=session_info(), word_info=words, categories=category_info(), users=user_info(), search=search)
 
 
 @app.route('/categories', methods=['POST', 'GET'])
 def render_categories():
-    categories = database_select('SELECT * FROM categories', ())
-    return render_template('categories.html', logged_in=is_logged_in(), user_info=user_info(), categories=categories)
+    # shows categories page
+    return render_template('categories.html', logged_in=is_logged_in(), session_info=session_info(), categories=category_info())
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -165,7 +195,7 @@ def render_login():
         flash("Login successful")
         return redirect('/')
 
-    return render_template('login.html', logged_in=is_logged_in(), user_info=user_info())
+    return render_template('login.html', logged_in=is_logged_in(), session_info=session_info())
 
 
 @app.route('/signup', methods=['POST', 'GET'])
@@ -204,7 +234,7 @@ def render_signup():
 
         return redirect('/login')
 
-    return render_template('signup.html', logged_in=is_logged_in(), user_info=user_info())
+    return render_template('signup.html', logged_in=is_logged_in(), session_info=session_info())
 
 
 @app.route('/logout')
@@ -217,17 +247,21 @@ def logout():
 
 @app.route('/about')
 def about():
-    #words = database_select('SELECT * FROM words', ())
-    #new_date = datetime.strptime("9 11 1901", "%d %m %Y").date()
-    #for word in words:
-    #    database_action('UPDATE words SET last_edited_date=? WHERE id=?',(new_date, word[0]))
-    #    database_action('UPDATE words SET last_edited_by=? WHERE id=?',('ET', word[0]))
-    #    database_action('UPDATE words SET image_name=? WHERE id=?',('noimage', word[0]))
-    return render_template('about.html', logged_in=is_logged_in(), user_info=user_info())
+    # functions to change data automatically
+    """
+    words = database_select('SELECT * FROM words', ())
+    new_date = datetime.strptime("9 11 1901", "%d %m %Y").date()
+    for word in words:
+        database_action('UPDATE words SET last_edited_date=? WHERE id=?',(new_date, word[0]))
+        database_action('UPDATE words SET last_edited_by_id=? WHERE id=?',(7, word[0]))
+        database_action('UPDATE words SET image_name=? WHERE id=?',('noimage', word[0]))
+    """
+    return render_template('about.html', logged_in=is_logged_in(), session_info=session_info())
 
 
 @app.route('/add', methods=['POST', 'GET'])
 def add():
+    # checks if the user is a teacher
     if is_logged_in():
         if session['role'] != 'Teacher':
             return redirect('/')
@@ -235,27 +269,36 @@ def add():
         return redirect('/')
 
     if request.method == 'POST':
+        # gets info from form and formats it
         maori = request.form.get('maori').title().strip()
         english = request.form.get('english').title().strip()
         definition = request.form.get('definition').capitalize().strip()
-        category = request.form.get('category')
+        word_category = request.form.get('category')
+        category_id = 0
+        for category in category_info():
+            if category[1] == word_category:
+                category_id = category[0]
         level = request.form.get('level')
-        user = session['firstname'] + session['lastname']
+        user_id = session['user_id']
         edited_date = datetime.today().strftime('%Y-%m-%d')
-        image_name = request.form.get('image_name')
-        if image_name == None:
-            image_name = 'noimage'
+        image_name = request.form.get('image_name').lower()
+        valid_image_name = 'noimage'
+        # credit goes to stack overflow for "os.listdir"
+        for file in os.listdir(PROJECT + "/static/images"):
+            filename = file.split('.')[0]
+            if image_name == filename.lower():
+                valid_image_name = filename
 
-        database_action('INSERT INTO words (english_word, maori_word, definition, category, level, last_edited_date, last_edited_by, image_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',(english, maori, definition, category, level, edited_date, user, image_name))
+        # adds word to database
+        database_action('INSERT INTO words (english_word, maori_word, definition, category_id, level, last_edited_date, last_edited_by_id, image_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',(english, maori, definition, category_id, level, edited_date, user_id, valid_image_name))
         flash("Your word has been added!", "info")
 
-    categories = database_select('SELECT * FROM categories', ())
-
-    return render_template('edit.html', logged_in=is_logged_in(), user_info=user_info(), categories=categories, word_info=None)
+    return render_template('edit.html', logged_in=is_logged_in(), session_info=session_info(), categories=category_info(), word_info=None)
 
 
 @app.route('/edit/<word_id>', methods=['POST', 'GET'])
 def edit(word_id):
+    # checks if the user is a teacher
     if is_logged_in():
         if session['role'] != 'Teacher':
             return redirect('/')
@@ -263,76 +306,55 @@ def edit(word_id):
         return redirect('/')
 
     if request.method == 'POST':
+        # gets info from form and formats it
         maori = request.form.get('maori').title().strip()
         english = request.form.get('english').title().strip()
         definition = request.form.get('definition').capitalize().strip()
-        category = request.form.get('category')
+        word_category = request.form.get('category')
+        category_id = 0
+        for category in category_info():
+            if category[1] == word_category:
+                category_id = category[0]
         level = request.form.get('level')
-        user = session['firstname'] + session['lastname']
+        user_id = session['user_id']
         edited_date = datetime.today().strftime('%Y-%m-%d')
         image_name = request.form.get('image_name')
-        if image_name == None:
-            image_name = 'noimage'
+        valid_image_name = 'noimage'
+        # credit goes to stack overflow for "os.listdir"
+        for file in os.listdir(PROJECT + "/static/images"):
+            filename = file.split('.')[0]
+            if image_name == filename:
+                valid_image_name = filename
 
-        database_action('UPDATE words SET english_word=?, maori_word=?, definition=?, category=?, level=?, last_edited_date=?, last_edited_by=?, image_name=? WHERE id=?',(english, maori, definition, category, level, edited_date, user, image_name, word_id))
+        # updates the existing word to have new info
+        database_action('UPDATE words SET english_word=?, maori_word=?, definition=?, category_id=?, level=?, last_edited_date=?, last_edited_by_id=?, image_name=? WHERE id=?',(english, maori, definition, category_id, level, edited_date, user_id, valid_image_name, word_id))
         flash("The word has been updated!", "info")
 
-    categories = database_select('SELECT * FROM categories', ())
-    word_info = database_select('SELECT * FROM `words` WHERE id=?',(word_id,))[0]
+    word_info = database_select('SELECT * FROM words WHERE id=?',(word_id,))[0]
 
-    return render_template('edit.html', logged_in=is_logged_in(), user_info=user_info(), categories=categories, word_info=word_info)
-
-
-@app.route('/delete', methods=['POST', 'GET'])
-def render_delete_words():
-    # gets search
-    if request.method == 'POST':
-        search = request.form.get('search').lower().strip()
-        return redirect('/delete/' + search)
-
-    words = database_select('SELECT * FROM words', ())
-    return render_template('delete.html', logged_in=is_logged_in(), user_info=user_info(), word_info=words)
+    return render_template('edit.html', logged_in=is_logged_in(), session_info=session_info(), categories=category_info(), word_info=word_info)
 
 
-@app.route('/delete/')
-def delete_words_redirect():
-    return redirect('/delete')
-
-
-@app.route('/delete/<search>', methods=['POST', 'GET'])
-def render_delete_wordsearch(search):
-    # gets search
-    if request.method == 'POST':
-        search = request.form.get('search').lower().strip()
-        return redirect('/delete/' + search)
-
-    words = []
-    all_words = database_select('SELECT * FROM words', ())
-    # Checks all the parts for all the words
-    for word in all_words:
-        for part in word:
-            # Checks to see if the search is in the part, also allows the id to match the search
-            if search == word[0] or(search in str(part).lower() and (part != word[6] and part != word[7] and part != word[8])):
-                # If there is a match, if the word is not already in the list it is added
-                if word not in words:
-                    words.append(word)
-
-    if len(words) == 0:
-        words = None
-    return render_template('delete.html', logged_in=is_logged_in(), user_info=user_info(), word_info=words)
+@app.route('/delete/<word_id>')
+def render_delete(word_id):
+    # gets the selected word's info
+    word_info = database_select('SELECT * FROM words WHERE id=?',(word_id,))[0]
+    return render_template('delete.html', logged_in=is_logged_in(), session_info=session_info(), word_info=word_info, categories=category_info(), users=user_info())
 
 
 @app.route('/delete_word/<word_id>')
 def delete(word_id):
+    # checks if user is teacher
     if is_logged_in():
         if session['role'] != 'Teacher':
             return redirect('/')
     else:
         return redirect('/')
 
+    # deletes the word from the database
     database_action('DELETE FROM words WHERE id = ?', (word_id,))
     flash("The word has been deleted!", "info")
-    return redirect('/delete')
+    return redirect('/words')
 
 
 if __name__ == '__main__':

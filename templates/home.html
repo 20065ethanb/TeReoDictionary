@@ -1,8 +1,10 @@
 {% extends "base.html" %}
-{% block pageheading %}Welcome{% if logged_in %} {{ user_info.get('firstname') }} {{ user_info.get('lastname') }}!{% endif %}{% endblock %}
+<!-- Welcomes the user if logged in -->
+{% block pageheading %}Welcome{% if logged_in %} {{ session_info.get('firstname') }} {{ session_info.get('lastname') }}!{% endif %}{% endblock %}
 
 
 {% block main %}
+    <!-- Homepage searchbar -->
     <form class="form" method="POST">
             <div class="form-group">
                 <div class="form-button">Search Words:</div>

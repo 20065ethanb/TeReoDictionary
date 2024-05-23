@@ -9,14 +9,27 @@
             </div>
 
             <div class="form-group">
-                <div class="form-element"><input type="text" name="search" id="search" required></div>
+                <div class="form-element"><input type="text" name="search" id="search"></div>
                 <div class="form-button-label"><input type="submit" value="Search"></div>
+            </div>
+            <!-- Category drop down box -->
+            <div class="form-group">
+                <div class="form-text-label">Category tag:</div>
+                <div class="form-element">
+                    <select name="category" id="category">
+                        <option {% if search == None %}selected{% endif %}>All</option>
+                        {% for category in categories %}
+                            <option {% if search != None %}{% if search[0] == category[0] %}selected{% endif %}{% endif %}>{{ category[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
        </form>
     </td></tr></table>
     <br>
     {% if word_info != None %}
         {% for word in word_info %}
+            <!-- Pop-up function -->
             <script>
                 function togglePopup{{ word[0] }}() {
                     document.getElementById("word_popup_{{ word[0] }}").classList.toggle("active");
@@ -34,19 +47,20 @@
                             <td colspan="2" class="definition">{{ word[3] }}</td>
                         </tr>
                         <tr>
-                            <td colspan="2" class="word-image">
-                                <img src ="/static/images/{{ word[8] }}.jpg">
+                            <td colspan="2">
+                                <img src ="/static/images/{{ word[8] }}.jpg" class="word-image">
                             </td>
                         </tr>
                         <tr>
-                            <td style="width: 50%">({{ word[4] }})</td>
-                            <td style="width: 50%">Level {{ word[5] }}</td>
+                            <td style="width: 50%"><a class="word_label">{% for category in categories %} {% if category[0] == word[4] %}{{ category[1] }}{% endif %}{% endfor %}</a></td>
+                            <td style="width: 50%"><a class="word_label">Level {{ word[5] }}</a></td>
                         </tr>
                         <tr>
-                            <td colspan="2">Last edited by {{ word[7] }} on {{ word[6] }}</td>
+                            <td colspan="2">Last edited by {% for user in users %} {% if user[0] == word[7] %}{{ user[1] }} {{ user[2] }}{% endif %}{% endfor %} on {{ word[6] }}</td>
                         </tr>
                         {% if logged_in %}
-                            {% if user_info['role'] == 'Teacher' %}
+                            <!-- Only teachers can edit and delete because students aren't trusted -->
+                            {% if session_info['role'] == 'Teacher' %}
                                 <tr>
                                     <td style="width: 50%"><a href="/edit/{{ word[0] }}">Edit</a></td>
                                     <td style="width: 50%"><a href="/delete/{{ word[0] }}">Delete</a></td>
@@ -57,6 +71,7 @@
                 </div>
             </div>
             <table class="word_display">
+            <!-- Open pop-up -->
                 <tr>
                     <td colspan="2"><h3 onclick="togglePopup{{ word[0] }}()">{{ word[2] }}</h3><p>{{ word[1] }}</p></td>
                 </tr>

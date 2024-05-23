@@ -1,70 +1,33 @@
 {% extends "base.html" %}
-{% block pageheading %}Delete{% endblock %}
+{% block pageheading %}<a style="color: red">Delete</a>{% endblock %}
 
 {% block main %}
-    <table><tr><td>
-        <form class="form" method="POST">
-            <div class="form-group">
-                <div class="form-button">Search Words:</div>
-            </div>
-
-            <div class="form-group">
-                <div class="form-element"><input type="text" name="search" id="search" required></div>
-                <div class="form-button-label"><input type="submit" value="Search"></div>
-            </div>
-       </form>
-    </td></tr></table>
-    <br>
-    {% if word_info != None %}
-        {% for word in word_info %}
-            <script>
-                function togglePopup{{ word[0] }}() {
-                    document.getElementById("delete_word_popup_{{ word[0] }}").classList.toggle("active");
-                }
-            </script>
-            <div class="word_info_popup" id="delete_word_popup_{{ word[0] }}">
-                <div class="overlay"></div>
-                <div class="content">
-                    <div class="close_button" onclick="togglePopup{{ word[0] }}()">&times;</div>
-                    <table class="word_display">
-                        <tr>
-                            <td colspan="2"><h4>Are you sure that you want to delete?</h4></td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"><h3>{{ word[2] }}</h3><p>{{ word[1] }}</p></td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" class="definition">{{ word[3] }}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" class="word-image">
-                                <img src ="/static/images/{{ word[8] }}.jpg">
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width: 50%">({{ word[4] }})</td>
-                            <td style="width: 50%">Level {{ word[5] }}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">Last edited by {{ word[7] }} on {{ word[6] }}</td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"><a href="/delete_word/{{ word[0] }}">Delete Word</a></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            <table class="word_display">
-                <tr>
-                    <td colspan="2"><h3 onclick="togglePopup{{ word[0] }}()">{{ word[2] }}</h3><p>{{ word[1] }}</p></td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="definition">{{ word[3] }}</td>
-                </tr>
-            </table>
-            <br>
-        {% endfor %}
-    {% else %}
-        <h2>No results found</h2>
-    {% endif %}
+    <table class="word_display">
+        <tr>
+            <td colspan="2"><h4 style="color: red">Are you sure that you want to delete?</h4></td>
+        </tr>
+        <tr>
+            <td colspan="2"><h3>{{ word_info[2] }}</h3><p>{{ word_info[1] }}</p></td>
+        </tr>
+        <tr>
+            <td colspan="2" class="definition">{{ word_info[3] }}</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="word-image">
+                <img src ="/static/images/{{ word_info[8] }}.jpg">
+            </td>
+        </tr>
+    <!-- shows what category and level the word is -->
+        <tr>
+            <td style="width: 50%"><a class="word_label">{% for category in categories %} {% if category[0] == word_info[4] %}{{ category[1] }}{% endif %}{% endfor %}</a></td>
+            <td style="width: 50%"><a class="word_label">Level {{ word_info[5] }}</a></td>
+        </tr>
+        <tr>
+            <td colspan="2">Last edited by {% for user in users %} {% if user[0] == word_info[7] %}{{ user[1] }} {{ user[2] }}{% endif %}{% endfor %} on {{ word_info[6] }}</td>
+        </tr>
+        <tr>
+            <td colspan="2"><a href="/delete_word/{{ word_info[0] }}">Confirm Delete</a></td>
+            <td colspan="2"><a href="/">No</a></td>
+        </tr>
+        </table>
 {% endblock %}

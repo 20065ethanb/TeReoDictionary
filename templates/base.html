@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-
+<!-- Font styles imported off internet -->
 <head>
     <meta charset="utf-8">
     <title>Te Reo Dictionary</title>
@@ -12,12 +12,14 @@
 
 <body>
 <nav>
+    <!-- Navbar with page links -->
     <div class="container">
         <div class="navbar-brand"><a href="/">Te Reo Dictionary</a></div>
         <div class="navbar-links">
             <a href="/words">Words</a>
             {% if logged_in %}
-                {% if user_info.get('role') == 'Teacher' %}
+                {% if session_info.get('role') == 'Teacher' %}
+                    <!-- Only teacher can access the add words page because students aren't trusted -->
                     <a href="/add">Add Words</a>
                 {% endif %}
             {% endif %}
@@ -31,12 +33,13 @@
         </div>
     </div>
 </nav>
+<!-- Title -->
 <div class="container">
     <header>
         <h1><a>Te Reo Dictionary</a></h1>
         <h2>{% block pageheading %}{% endblock %}</h2>
     </header>
-
+<!-- Flashes messages when needed -->
     <main>
         {% with messages = get_flashed_messages() %}
             {% if messages %}

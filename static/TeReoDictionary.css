@@ -107,12 +107,15 @@ h4 {
     cursor: pointer;
 }
 
-.definition {
+.definition, .word_label {
     font-weight: bold;
 }
 
+.word-image {
+    width: 50%;
+}
+
 img {
-    height: 150px;
     overflow: hidden;
 }
 
@@ -227,4 +230,8 @@ td, tr {
 
 .category-box-label {
     padding: 0.5rem;
+}
+
+.category-box-image {
+    width: 100%;
 }

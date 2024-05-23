@@ -2,7 +2,8 @@
 
 {% block pageheading %}{% if word_info == None %}Add{% else %}Edit{% endif %} word{% endblock %}
 
-{% block main %}    
+{% block main %}
+
     <form class="form" method="POST">
         <div class="form-group">
             <div class="form-text-label">Maori Word:</div>
@@ -18,13 +19,14 @@
             <div class="form-text-label">Definition:</div>
             <div class="form-element"><input type="text" name="definition" id="definition" maxlength="100" {% if word_info != None %} value="{{ word_info[3] }}" {% endif %} required></div>
         </div>
-
+<!-- Category dropdown box -->
         <div class="form-group">
             <div class="form-text-label">Category:</div>
             <div class="form-element">
                 <select name="category" id="category">
                     {% for category in categories %}
-                        <option {% if word_info != None %} {% if word_info[4] == category[1] %} selected {% endif %} {% endif %}>{{ category[1] }}</option>
+                        <!-- Selects the current category -->
+                        <option {% if word_info != None %} {% if word_info[4] == category[0] %} selected {% endif %} {% endif %}>{{ category[1] }}</option>
                     {% endfor %}
                 </select>
             </div>
